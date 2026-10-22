@@ -56,7 +56,7 @@ Per-program documentation with how it works, how to use it and cautions: **[docs
 
 ## Complete software list
 
-One line per program. ★ = newest upstream version built/downloaded by the scripts (the distro version stays installed as a fallback), **$** = proprietary (downloaded from the vendor at build time, not in this repo). Versions are those used for the October 2026 build. For *how it works / how to use it / cautions* see **[docs/PROGRAMS.md](docs/PROGRAMS.md)**.
+One line per program. ★ = newest upstream version built/downloaded by the scripts (the distro version stays installed as a fallback), **$** = proprietary (downloaded from the vendor at build time, not in this repo). Versions are those used for the October 2026 build. For *how it works / how to use it / cautions* see **[docs/PROGRAMS.md](docs/PROGRAMS.md)**. Exact versions found in the built image (167 main programs, with source and description) are in **[docs/SOFTWARE-LIST.md](docs/SOFTWARE-LIST.md)**, and every one of the 2166 installed packages is in **[docs/ALL-PACKAGES.md](docs/ALL-PACKAGES.md)**.
 
 <details open>
 <summary><b>1. Cloning and imaging of failing drives</b></summary>
@@ -194,6 +194,8 @@ build/            the build pipeline (bash) — run on a Linux build host
   chroot/         scripts that run INSIDE the image chroot
   assets/         optional extras (e.g. your own wallpaper) — see assets/README.md
 docs/PROGRAMS.md  what every program in the image does and how to use it
+docs/SOFTWARE-LIST.md  main programs with the exact versions in the image
+docs/ALL-PACKAGES.md   every installed package (dpkg) with version and description
 docs/STEP-BY-STEP.md  copy-and-paste build / test / USB walkthrough
 docs/BUILD.md     how the image is built, lessons learned, how to test
 ```
