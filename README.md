@@ -37,7 +37,8 @@ sudo bash build/04-configure.sh    # desktop, launchers, cheat sheets, self-test
 sudo bash build/05-pack.sh         # squashfs + hybrid BIOS/UEFI ISO  ->  $BUILD_ROOT/out/
 ```
 
-Details, pitfalls and the test procedure (QEMU BIOS/UEFI/USB): **[docs/BUILD.md](docs/BUILD.md)**.
+A complete copy-and-paste walkthrough (every step, checks, QEMU tests, writing to USB, troubleshooting): **[docs/STEP-BY-STEP.md](docs/STEP-BY-STEP.md)**.
+Details, pitfalls and the legal notes: **[docs/BUILD.md](docs/BUILD.md)**.
 
 ## Status — please read
 
@@ -53,6 +54,7 @@ build/            the build pipeline (bash) — run on a Linux build host
   chroot/         scripts that run INSIDE the image chroot
   assets/         optional extras (e.g. your own wallpaper) — see assets/README.md
 docs/PROGRAMS.md  what every program in the image does and how to use it
+docs/STEP-BY-STEP.md  copy-and-paste build / test / USB walkthrough
 docs/BUILD.md     how the image is built, lessons learned, how to test
 ```
 
