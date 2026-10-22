@@ -1,0 +1,7 @@
+clear; uname -r; grep PRETTY /etc/os-release; id -un; cat /proc/cmdline
+lsblk -o NAME,SIZE,MODEL,SERIAL; ls ~/Desktop | wc -l
+sudo modprobe oscdriver; lsmod | grep osc; modinfo oscdriver | head -3
+opensuperclone --version 2>&1 | head -2; oscviewer --version 2>&1 | head -1; ddrescue --version | head -1
+which dmde rstudio hdsentinel gparted smartctl testdisk photorec ddrescueview guymager gsmartcontrol
+dpkg -l | grep -c ^ii; smartctl --version | head -1; systemctl is-enabled smartmontools ssh mdadm 2>&1 | head -3
+cat /etc/udev/rules.d/99-disable-udisk-automount.rules | tail -1; dkms status

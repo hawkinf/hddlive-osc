@@ -1,0 +1,11 @@
+clear; hddlive-selftest 2>&1 | tee /tmp/selftest.txt | tail -n 50
+@sleep 300
+@shot 05a-selftest
+clear; grep -c "OK" /tmp/selftest.txt; grep "FAIL" /tmp/selftest.txt; tail -n 1 /tmp/selftest.txt
+@sleep 3
+@shot 05b-falhas
+clear; sudo pkill -f /opt/ufs-explorer-pro; sleep 2; sudo dmde
+@sleep 35
+@key ret
+@sleep 25
+@shot 05c-dmde-eula

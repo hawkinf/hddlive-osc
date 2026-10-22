@@ -1,0 +1,13 @@
+# never commit images, downloads, licenses or build trees
+*.iso
+*.part
+*.sha256
+private/
+license.key
+license.bin
+dl/
+rootfs/
+iso-src/
+out/
+logs/
+test/
