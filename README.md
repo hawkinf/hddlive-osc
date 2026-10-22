@@ -53,7 +53,112 @@ The central piece is **[OpenSuperClone](https://github.com/ISpillMyDrink/OpenSup
 
 \* proprietary — downloaded by the scripts from the vendor, subject to the vendor's license (DMDE runs as Free Edition unless you enter your own license).
 
-Full per-program documentation (what each tool does, how it works, how to use it, cautions): **[docs/PROGRAMS.md](docs/PROGRAMS.md)**.
+Per-program documentation with how it works, how to use it and cautions: **[docs/PROGRAMS.md](docs/PROGRAMS.md)**. The complete one-line list is right below.
+
+## Complete software list
+
+One line per program. ★ = newest upstream version built/downloaded by the scripts (the distro version stays installed as a fallback), **$** = proprietary (downloaded from the vendor at build time, not in this repo). Versions are those used for the October 2026 build. For *how it works / how to use it / cautions* see **[docs/PROGRAMS.md](docs/PROGRAMS.md)**.
+
+<details open>
+<summary><b>1. Cloning and imaging of failing drives</b></summary>
+
+| Program | What it does |
+|---|---|
+| **OpenSuperClone** ★ 2.6.0-alpha1 (2.5.0 fallback) | Open-source cloner/imager for drives with bad sectors: phased copy with a map/log, direct AHCI/IDE/USB access, USB-relay power cycling, 65 ATA/Seagate/WD scripts, and a *Virtual Disk* kernel driver (DKMS) that serves only the sectors a tool asks for |
+| **OSCViewer / OpenSuperTool** | Graphical viewer of the OpenSuperClone log/domain; CLI tool mode of OpenSuperClone |
+| **GNU ddrescue** ★ 1.30 | The reference command-line cloner: copies around read errors, records a resumable mapfile, retries later |
+| **ddrescueview** 0.4.5 | Colored block map of a ddrescue mapfile (optional, from the original HDDLive ISO) |
+| **ddrutility** 2.8 | ddrescue helpers: finds *which files* are hit by the bad sectors (`ddru_findbad`), copies only used NTFS clusters |
+| **safecopy, dc3dd, dcfldd, recoverdm** | Alternative imagers: block skip/retry strategies; forensic `dd` with hashing/logging; recovery from bad optical/floppy media |
+| **Guymager** | Forensic imager GUI (dd/E01/AFF) with hashes, verification and case metadata |
+| **Clonezilla, Partclone** ★ 0.3.50, **Partimage, FSArchiver** ★ 0.8.9 | Image/clone *healthy* disks copying only used blocks; file-system archives with compression/encryption |
+| **libewf / ewf-tools** ★ 20260924, **afflib-tools, xmount, qemu-img/nbd** | Create/verify/mount E01 and AFF evidence images; present or convert images (VMDK/VHD/QCOW2) without touching the original |
+| **rclone** ★ 1.75 | "rsync for the cloud": upload images/recovered files to Drive, OneDrive, S3, SFTP, SMB… |
+| **HDDSuperClone 2.3.3, HDDSuperTool, HDDSCViewer + 47 `hddscripts`** **$** *(optional)* | The original proprietary tools of the old HDDLive, kept as a fallback; only if you supply the original ISO |
+
+</details>
+
+<details>
+<summary><b>2. File and partition recovery</b></summary>
+
+| Program | What it does |
+|---|---|
+| **DMDE** **$** 4.4.4 + 4.5.0 beta | Disk editor and logical recovery: rebuilds file systems, scans for lost structures, RAID reconstruction, clone/hex tools (runs as Free Edition unless you enter your own license) |
+| **R-Studio** **$** 5.5 | Professional multi-filesystem recovery with RAID assistant and hex editor (demo until licensed) |
+| **R-Linux** **$** 6.5 | Free edition of R-Studio's engine for ext2/3/4 (and newer Btrfs/XFS support) |
+| **UFS Explorer Professional Recovery** **$** *(optional)* | Cross-platform recovery with strong RAID/NAS/VM support (UFS/ZFS, Drobo, Synology, VMware…); installed only if you set `ACCEPT_UFS_EULA=yes` |
+| **TestDisk** ★ 7.2 / 7.3-WIP | Recovers lost partitions, repairs MBR/GPT and boot sectors |
+| **PhotoRec / QPhotoRec** ★ 7.2 | Signature-based carving of ~480 file types, with a Qt GUI version |
+| **Foremost, Scalpel** | Header/footer file carving with configurable rules |
+| **recoverjpeg / recovermov, magicrescue** | Photo/video carving from cards; "recipe"-based carving |
+| **ntfsundelete, scrounge-ntfs, extundelete, ext4magic, ext3grep, fatcat** | Undelete / MFT-based recovery on NTFS, journal-based undelete on ext3/4, FAT inspection |
+| **bulk_extractor** ★ 2.2.0 | Scans a whole image without a file system and extracts e-mails, URLs, cards, phone numbers, GPS… |
+| **binwalk, yara, exiftool, chntpw** | Find embedded files/firmware; pattern rules; read/edit file metadata; reset local Windows passwords (authorized use only) |
+| **Double Commander** 1.2.9 | Two-pane file manager to copy recovered data around |
+
+</details>
+
+<details>
+<summary><b>3. Partitions, file systems, RAID and encryption</b></summary>
+
+| Program | What it does |
+|---|---|
+| **GParted** ★ 1.8.1, **GNOME Disks, gdisk/sgdisk, fdisk/parted, gpart, kpartx** | Partition editors and inspectors (GParted writes to the disk!); gpart guesses lost partitions; kpartx maps partitions of an image |
+| **ntfs-3g / ntfsprogs** ★ 2026.9.28 | `ntfsclone`, `ntfsfix`, `ntfsresize`, `ntfsundelete`… (mounting still uses Ubuntu's patched ntfs-3g) |
+| **e2fsprogs** ★ 1.47.4, **btrfs-progs** ★ 7.1, **xfsprogs** ★ 7.2.1 | Check/repair/inspect ext2/3/4, Btrfs (`btrfs restore` extracts without mounting) and XFS |
+| **exfatprogs** ★ 1.4.3, dosfstools, **nilfs-utils** ★ 2.3.1, f2fs-tools, jfsutils, reiserfsprogs, hfsprogs/hfsplus, udftools, bcache-tools | Tools for exFAT, FAT, NILFS2, F2FS, JFS, ReiserFS, HFS+, UDF, bcache |
+| **OpenZFS** 2.2 (`zpool`, `zfs`) | ZFS pools — automatic import disabled, use `zpool import -o readonly=on` |
+| **mdadm** ★ 4.6, **LVM2, dmraid, multipath-tools** | Software RAID, logical volumes, fake-RAID; nothing is assembled automatically |
+| **cryptsetup** ★ 2.8.0, **dislocker, libbde-utils, ecryptfs-utils** | Open LUKS/VeraCrypt volumes, BitLocker volumes and old encrypted home folders |
+| **libyal tools** (libvshadow, libvhdi, libvmdk, libqcow, libfsapfs, libfsntfs, libvslvm) | Inspect/mount Windows shadow copies, virtual disks, APFS… read-only |
+| **libguestfs-tools** | Open VM images without booting or mounting them |
+| **nbd-client, sshfs, nfs-common, cifs-utils** | Mount remote NAS/servers as source or destination |
+
+</details>
+
+<details>
+<summary><b>4. Hardware diagnostics</b></summary>
+
+| Program | What it does |
+|---|---|
+| **smartmontools** ★ 7.5 | `smartctl` reads S.M.A.R.T. data and runs self-tests on SATA/SAS/NVMe/USB drives (`smartd` is disabled) |
+| **GSmartControl** ★ 2.0.2 | Graphical front-end for smartctl |
+| **Hard Disk Sentinel** **$** 0.20c (Linux console) | Health/performance/temperature rating of disks |
+| **hdparm** ★ 9.65, **sdparm, sg3_utils** ★ 1.49 | ATA identify/benchmark/HPA/security; raw SCSI/SAS/SAT commands |
+| **nvme-cli** ★ 3.1 | NVMe identify, SMART log, format/sanitize |
+| **lsscsi, smp-utils, lshw, inxi, HardInfo, CPU-X, dmidecode, lm-sensors, usbutils, pciutils** | Hardware inventory: ports, expanders, sensors, USB/PCI devices |
+| **fio, bonnie++, stress-ng, memtester, memtest86+** | Disk/CPU/RAM benchmarks, stress tests and RAM tests |
+| **f3** | Detects counterfeit USB sticks and memory cards |
+| **nwipe, wipe, secure-delete** | Secure erase (**destructive**) |
+| **disktype, pv, ncdu, iotop, htop, Baobab** | Media type, progress, disk usage, I/O and process monitors |
+
+</details>
+
+<details>
+<summary><b>5. Forensics and image analysis</b></summary>
+
+| Program | What it does |
+|---|---|
+| **The Sleuth Kit** ★ 4.15 | `mmls`, `fls`, `icat`, `tsk_recover`, `mactime`… read images without mounting (lists deleted files, timelines) |
+| **Autopsy** 4.23.1 *(optional build step)* | Graphical forensic platform on top of Sleuth Kit: cases, timeline, keyword/hash search |
+| **wxHexEditor, GHex, hexedit, dhex, bvi** | Hex editors (wxHexEditor edits whole disks and huge images) |
+| **ewf tools, exiftool, yara, binwalk, bulk_extractor** | See the sections above — evidence formats, metadata, signatures, firmware, feature extraction |
+
+</details>
+
+<details>
+<summary><b>6. Network, desktop and utilities</b></summary>
+
+| Program | What it does |
+|---|---|
+| **Firefox** (Mozilla deb) | Web browser (Ubuntu's snap version is removed because it does not work well live) |
+| **openssh-server** (off by default), **rsync, lftp, curl, wget, nmap, tcpdump, iperf3, ethtool, mtr, whois, x11vnc** | Remote access, transfers and network diagnostics |
+| **tmux, mc, ranger, vim, git, gdb, strace, lsof, smem, sysstat** | Terminal workflow and troubleshooting tools |
+| **p7zip, 7zip, unrar, unar, cabextract, pigz, zip, lzip, fdupes, rdfind** | Unpack archives; find duplicate files after a recovery |
+| **Xfburn, SimpleScreenRecorder, Orage, Gromit-MPX, Screen Ruler, Mousepad, Ristretto, Parole** | Burn discs, record the screen, calendar, draw on screen, edit text, view images/media |
+| **Xfce 4.18** (Greybird theme, elementary-xfce-darker icons) | The desktop, with the 9 numbered folders, launchers, cheat sheets and `hddlive-selftest` |
+
+</details>
 
 ## Quick start
 
