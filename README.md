@@ -182,7 +182,8 @@ Details, pitfalls and the legal notes: **[docs/BUILD.md](docs/BUILD.md)**.
 ## Status — please read
 
 * The pipeline (steps 01, 03, 08, 11, 04, 05) was run end to end and the resulting ISO was **tested in QEMU/KVM** (BIOS, UEFI and as a USB disk; self-test ≈70 checks OK).
-* **Not tested on real hardware yet.** The OpenSuperClone *Virtual Disk* mode needs Secure Boot **off** (the DKMS module is unsigned). OpenSuperClone 2.6.0-alpha1 is a pre-release; the stable 2.5.0 `.deb` is kept in the image as a fallback.
+* **Tested on real hardware, booting in both UEFI and Legacy (BIOS/CSM) modes.**
+* The OpenSuperClone *Virtual Disk* mode needs Secure Boot **off** (the DKMS module is unsigned). OpenSuperClone 2.6.0-alpha1 is a pre-release; the stable 2.5.0 `.deb` is kept in the image as a fallback.
 * The download step (02) was validated against the URL list but not re-run from a completely empty tree.
 * Data recovery can destroy data. **Clone first, work on the copy.** Several bundled scripts/tools are destructive by design (see the cheat sheets).
 

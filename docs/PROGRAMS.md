@@ -328,7 +328,7 @@ A **two-pane** file manager (Total Commander style): copy/move large volumes bet
 
 1. **Secure Boot enabled ⇒ the `oscdriver` module does not load** (unsigned DKMS module). Disable Secure Boot to use Virtual Disk Mode.
 2. The `oscdriver 2.6.8` driver is built for kernel **7.0.0-38**; if you change kernel, run `sudo dkms install oscdriver/2.6.8 -k <kernel>` (headers + gcc are in the image).
-3. **OpenSuperClone 2.6.0-alpha1 is a pre-release.** Validate it on real hardware; for critical production work use the 2.5.0 kept in the image, or ddrescue.
+3. **OpenSuperClone 2.6.0-alpha1 is a pre-release.** Validate it on your own drives first; for critical production work use the 2.5.0 kept in the image, or ddrescue.
 4. Nothing persists: save images/logs/licenses on an external disk.
 5. **Commercial licenses:** none of the proprietary programs are in the repository; the build scripts download them from the vendors and each user must respect the vendors' licenses and EULAs. DMDE is installed without a license (Free Edition; enter your own license if you have one), R-Studio runs as a demo until activated, UFS Explorer needs your own license/trial (and is only installed if the builder set `ACCEPT_UFS_EULA=yes`), R-Linux and the Hard Disk Sentinel Linux console edition are distributed free by their vendors (check their current terms), and the legacy HDDSuperClone 2.3.3.pro modules are optional and proprietary.
 6. **Destructive** tools: GParted, `nwipe`, `wipe`, OSC scripts (`ata*_write*`, `erase`, `security`, `wd_royl_*`), `hdparm --security-*`, `sg_format/sg_sanitize`, `mkfs.*`, `dd`. Check `/dev/sdX` with `lsblk -o NAME,SIZE,MODEL,SERIAL` **before** any write.
