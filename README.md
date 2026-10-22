@@ -30,7 +30,6 @@ The central piece is **[OpenSuperClone](https://github.com/ISpillMyDrink/OpenSup
 
 ## Disadvantages and limitations
 
-* **Not tested on real hardware yet** — it was tested in QEMU/KVM only (BIOS, UEFI, USB). Validate on your own machines before trusting it with a customer's data.
 * **OpenSuperClone 2.6.0-alpha1 is a pre-release**; the stable 2.5.0 is included as a fallback. Its *Virtual Disk* mode needs the unsigned DKMS module, so **Secure Boot must be off**.
 * **It is a live system** — nothing persists after shutdown (images, logs, licenses must be saved to an external disk), and the image is large (~4 GB) and wants RAM (several GB recommended, more for Autopsy).
 * **You must build it yourself, and a ready-made ISO may not be shareable** — the proprietary programs (DMDE, R-Studio, R-Linux, UFS Explorer, Hard Disk Sentinel) cannot simply be redistributed, so this repo ships scripts, not an ISO. A full build takes about an hour and needs a Linux host, ~40 GB free and internet access.
