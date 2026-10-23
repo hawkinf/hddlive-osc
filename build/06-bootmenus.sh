@@ -14,6 +14,11 @@ menuentry "HDDLive - Try without installing" {
 	linux	/casper/vmlinuz  $CMD $LB quiet splash ---
 	initrd	/casper/initrd
 }
+menuentry "HDDLive - persistent (needs a partition labeled casper-rw)" {
+	set gfxpayload=keep
+	linux	/casper/vmlinuz  $CMD $LB persistent quiet splash ---
+	initrd	/casper/initrd
+}
 menuentry "HDDLive - disable ataX (press e, change X, e.g. 1 = ata1)" {
 	set gfxpayload=keep
 	linux	/casper/vmlinuz  $CMD $LB quiet splash --- libata.force=X:disable

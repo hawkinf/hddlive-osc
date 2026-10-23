@@ -43,6 +43,7 @@ mk . 08-Terminal          "Terminal"                 "Terminal"                 
 mk . 90-SelfTest "HDDLive Self-Test" "Checks the tools, the driver and opens every GUI"   "bash -c 'hddlive-selftest; echo; read -p \"Press ENTER to close\"'" utilities-system-monitor true
 mk . 91-DisableScreensaver "Disable Screensaver" "Turns off screen protection and DPMS" "bash -c 'xset -dpms; xset s off; pkill xscreensaver 2>/dev/null; xfce4-screensaver-command --exit 2>/dev/null; echo Screensaver OFF - re-enable: xset +dpms; xset s on; exec bash'" preferences-desktop-screensaver true
 guide . 92-Command-Guide "Guide: ALL terminal commands" 6-cli-tools.txt
+mk . 93-Install-to-disk "Install HDDLive to disk" "Copies this system to a disk (BIOS+UEFI). ERASES the chosen disk" "bash -c 'sudo hddlive-install; echo; read -p \"Press ENTER to close\"'" system-software-install true
 
 # ================= 1 Diagnose =================
 P=1-Diagnose
@@ -151,6 +152,7 @@ mk $P 6-Gromit         "Gromit-MPX"         "Draw on the screen"                
 mk $P 7-ScreenRuler    "Screen ruler"       "Measure in pixels"                          "screenruler"                            applications-graphics false
 mk $P 8-nwipe          "nwipe - WIPE DISK (DESTRUCTIVE)" "Wipes the disk: data will NOT come back" "sudo nwipe"                     edit-delete true
 cli $P 9-f3            "f3 - fake flash drive/card?" utilities-terminal "  sudo f3probe --destructive /dev/sdX   WIPES the device" "  f3write /mnt/x ; f3read /mnt/x   non-destructive"
+guide $P 91-Guide-install "Guide: install to disk / keep on USB" 8-install-to-disk.txt
 
 cat > "$D/README-HDDLive.txt" <<'EOF'
 HDDLive (Xubuntu 24.04 + OpenSuperClone) - quick guide (English, internal build)

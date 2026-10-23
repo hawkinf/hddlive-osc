@@ -33,6 +33,7 @@ What the build does **not** do:
 | Steps 01 (prepare), 03 (install), 08 (newer), 11 (ufs), 04 (configure), 05 (pack) | Executed; the resulting ISO was produced. |
 | Resulting ISO in QEMU: BIOS (CD), UEFI (OVMF), and as a USB stick (`qemu-xhci` + `usb-storage`) | Booted to the desktop. `hddlive-selftest` reported about 70 checks OK, 0 failed (the exact count depends on which optional parts are installed). `md5sum -c` of the mounted media passed. |
 | Step 02 (download) | **Only partially exercised end to end.** The download list was validated, but a fresh run of the whole step against all vendor servers has not been completed. Vendor URLs are pinned to specific versions and may move or disappear. |
+| `hddlive-install` (install to disk) | Run from the live ISO in QEMU onto a blank virtual disk; the installed disk booted to the desktop in BIOS and in UEFI. See [INSTALL-TO-DISK.md](INSTALL-TO-DISK.md). |
 | Step 10 (Autopsy, optional) | Present in the pipeline; not part of the final tested configuration. |
 | Real hardware | **Booted and used on physical PCs in both UEFI and Legacy (BIOS/CSM) modes.** Not covered by this document: Secure Boot (the DKMS module is unsigned, so the virtual-disk mode needs it off) and commercial license activation (UFS Explorer, R-Studio). |
 

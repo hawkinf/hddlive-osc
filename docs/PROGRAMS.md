@@ -271,7 +271,7 @@ A **two-pane** file manager (Total Commander style): copy/move large volumes bet
 * **Wallpaper (optional):** custom art can be placed in `build/assets/wallpaper-hawk-data-recovery.png` before building (it is not included in the repository); when present it is installed as `/usr/share/backgrounds/hddlive/wallpaper-hawk-data-recovery.png` and applied as the system default (zoom, with the icons falling on the dark area at the left).
 * **LibreOffice is not included.** For spreadsheets/reports use Firefox (web) or install it in the session (`sudo apt install libreoffice-calc`, needs network and is lost at power-off).
 * **Everything at hand — the Desktop has 9 folders ordered by the bench workflow**; every graphical program and every important terminal tool has a shortcut (terminal ones open a terminal that **shows usage examples** and leaves the prompt ready). Shortcuts for programs that are not in the image (e.g. Autopsy in the default build, the legacy HDDSuperClone modules, UFS Explorer if skipped) are omitted automatically.
-  * **Root:** OpenSuperClone · DMDE · R-Studio · UFS Explorer · Double Commander · GParted · HDDSuperClone (legacy) · Terminal · HDDLive Self-Test · Disable Screensaver · Command Guide · README.
+  * **Root:** OpenSuperClone · DMDE · R-Studio · UFS Explorer · Double Commander · GParted · HDDSuperClone (legacy) · Terminal · HDDLive Self-Test · Disable Screensaver · Command Guide · **Install HDDLive to disk** · README.
   * `1-Diagnose`: GSmartControl, Hard Disk Sentinel, GNOME Disks, HardInfo, CPU-X, lshw-gtk, List disks, smartctl, hdparm/sg3/nvme, memtester, Task Manager
   * `2-Clone-First`: OpenSuperClone, OpenSuperTool, OSCViewer, ddrescueview, Guymager, Clonezilla, ddrescue, Partclone/FSArchiver, EWF/dc3dd, guide, HDDSuperClone/HDDSuperTool/HDDSCViewer (legacy)
   * `3-Recover-Files`: DMDE 4.4.4, DMDE 4.5.0 Beta, R-Studio, R-Linux, UFS Explorer, QPhotoRec, TestDisk, PhotoRec, TestDisk/PhotoRec 7.3-WIP, Double Commander, Foremost/Scalpel, bulk_extractor, undelete NTFS/ext, guide
@@ -281,7 +281,12 @@ A **two-pane** file manager (Total Commander style): copy/move large volumes bet
   * `7-Scripts-and-Legacy`: HDDSuperClone 2.3.3 / HDDSuperTool / HDDSCViewer (legacy), the folders of the **`.osc` scripts**, of the old **hddscripts** and of **your own scripts**, scripts guide
   * `8-Network-Internet`: Firefox, Network Connections, rclone, mount server (sshfs/SMB/NFS), start SSH/VNC, Volume
   * `9-Utilities`: Baobab, Mousepad, Ristretto, Xfburn, Screen Recorder, Gromit-MPX, Screen Ruler, **nwipe (destructive)**, f3
-* **Text guides (cheat sheets):** `/usr/share/hddlive/cheatsheets/` — `1-clone-first`, `2-raid-lvm-crypto`, `3-analyze-images`, `4-repair-safely`, `5-scripts`, `6-cli-tools`, `7-recover-files`.
+* **Text guides (cheat sheets):** `/usr/share/hddlive/cheatsheets/` — `1-clone-first`, `2-raid-lvm-crypto`, `3-analyze-images`, `4-repair-safely`, `5-scripts`, `6-cli-tools`, `7-recover-files`, `8-install-to-disk`.
+
+---
+
+### 8.1 `hddlive-install` — make the live system permanent
+The image has no graphical installer. `sudo hddlive-install` (Desktop shortcut "Install HDDLive to disk") copies the running system to an empty disk: GPT, BIOS + UEFI GRUB, your user, host name, no os-prober. It **erases the chosen disk** and refuses the live media and mounted disks. Details, persistence on the USB stick and the manual procedure: [INSTALL-TO-DISK.md](INSTALL-TO-DISK.md).
 
 ---
 

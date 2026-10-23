@@ -241,6 +241,169 @@ Tip: DMDE and R-Studio show names and folders; PhotoRec does not (files like f12
 EOF
 chmod 644 $G/*.txt
 
+cat > /usr/local/bin/hddlive-install <<'HDDLIVE_INSTALL_EOF'
+#!/bin/bash
+# hddlive-install - copy the running HDDLive live system to a disk so it becomes permanent (BIOS/Legacy + UEFI).
+# It ERASES the chosen disk. Run it from the live session:  sudo hddlive-install [DISK] [--user NAME] [--hostname NAME] [--yes]
+set -uo pipefail
+
+usage() {
+  cat <<'USAGE'
+Usage: sudo hddlive-install [DISK] [options]
+  DISK                 target disk, e.g. /dev/sdb or /dev/nvme0n1 (asked interactively if omitted)
+  --user NAME          user account to create (asked if omitted)
+  --hostname NAME      machine name (default: hddlive)
+  --squashfs PATH      path of casper/filesystem.squashfs (auto-detected in the live media)
+  --yes                skip the final "type the device and ERASE" confirmation (passwords are still asked)
+  -h, --help           this help
+
+Layout created on the target: GPT with a 2 MiB bios_grub partition, a 512 MiB EFI System Partition and the rest as ext4 (root).
+GRUB is installed for BOTH Legacy/BIOS and UEFI (normal UEFI entry + removable fallback). os-prober is disabled in the installed
+system so it never probes other disks on its own. Bench protections (no auto-mount, RAID/ZFS not auto-assembled) are kept.
+USAGE
+}
+
+DISK=""; USERN=""; HOSTN="hddlive"; SQ=""; YES=0
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -h|--help) usage; exit 0 ;;
+    --user) USERN="${2:-}"; shift 2 ;;
+    --hostname) HOSTN="${2:-}"; shift 2 ;;
+    --squashfs) SQ="${2:-}"; shift 2 ;;
+    --yes) YES=1; shift ;;
+    -*) echo "unknown option: $1"; usage; exit 2 ;;
+    *) DISK="$1"; shift ;;
+  esac
+done
+
+[ "$(id -u)" -eq 0 ] || exec sudo -E bash "$0" "$@"
+die() { echo "ERROR: $*" >&2; exit 1; }
+for t in parted mkfs.ext4 mkfs.vfat unsquashfs grub-install lsblk blkid chroot; do command -v "$t" >/dev/null 2>&1 || die "missing tool: $t"; done
+
+# ---- 1. find the system image
+if [ -z "$SQ" ]; then
+  for c in /cdrom/casper/filesystem.squashfs /run/live/medium/casper/filesystem.squashfs /lib/live/mount/medium/casper/filesystem.squashfs; do
+    [ -f "$c" ] && { SQ="$c"; break; }
+  done
+fi
+[ -n "$SQ" ] && [ -f "$SQ" ] || die "filesystem.squashfs not found. If you booted with 'load into RAM', mount the USB stick and pass --squashfs /path/casper/filesystem.squashfs"
+echo "System image: $SQ ($(du -h "$SQ" | cut -f1))"
+
+# disk that holds the live media (never offered as a target)
+LIVEDISK=""
+SRC=$(findmnt -no SOURCE -T "$SQ" 2>/dev/null || true)
+if [ -b "${SRC:-}" ]; then LIVEDISK=$(lsblk -no PKNAME "$SRC" 2>/dev/null | head -n1); [ -n "$LIVEDISK" ] && LIVEDISK="/dev/$LIVEDISK"; fi
+
+# ---- 2. choose the disk
+list_disks() {
+  printf '\n%-16s %-8s %-28s %-18s %-6s %s\n' DEVICE SIZE MODEL SERIAL TRAN NOTES
+  lsblk -dpno NAME,SIZE,MODEL,SERIAL,TRAN,TYPE 2>/dev/null | awk '$NF=="disk"' | while read -r line; do
+    dev=$(echo "$line" | awk '{print $1}')
+    [ "$dev" = "$LIVEDISK" ] && note="<- live media (not allowed)" || note=""
+    mp=$(lsblk -nro MOUNTPOINT "$dev" 2>/dev/null | grep -c .)
+    [ "$mp" -gt 0 ] && note="$note mounted partitions"
+    printf '%-16s %s\n' "$dev" "$(echo "$line" | cut -d' ' -f2-) $note"
+  done
+  echo
+}
+echo "Disks seen by this system (the target will be COMPLETELY ERASED):"; list_disks
+[ -n "$DISK" ] || { read -r -p "Target disk (for example /dev/sdb): " DISK; }
+[ -b "$DISK" ] || die "$DISK is not a block device"
+[ "$(lsblk -dno TYPE "$DISK")" = "disk" ] || die "$DISK is not a whole disk (give the disk, not a partition)"
+[ "$DISK" != "$LIVEDISK" ] || die "$DISK holds the live media; choose another disk"
+if lsblk -nro MOUNTPOINT "$DISK" | grep -q .; then die "$DISK has mounted partitions; unmount them first (and make sure it is the right disk!)"; fi
+SIZE_B=$(blockdev --getsize64 "$DISK"); [ "$SIZE_B" -ge $((12*1024*1024*1024)) ] || die "$DISK is smaller than 12 GB"
+
+# ---- 3. account data (asked BEFORE anything is erased)
+[ -n "$USERN" ] || read -r -p "User name to create (lowercase, e.g. tech): " USERN
+echo "$USERN" | grep -Eq '^[a-z_][a-z0-9_-]{0,30}$' || die "invalid user name"
+[ -n "$HOSTN" ] || HOSTN=hddlive
+echo "$HOSTN" | grep -Eq '^[A-Za-z0-9][A-Za-z0-9-]{0,62}$' || die "invalid host name"
+read -r -s -p "Password for $USERN: " PW1; echo; read -r -s -p "Repeat the password: " PW2; echo
+[ -n "$PW1" ] && [ "$PW1" = "$PW2" ] || die "passwords are empty or do not match"
+
+# ---- 4. confirmation
+MODEL=$(lsblk -dno MODEL,SIZE,SERIAL "$DISK" | xargs)
+echo
+echo "About to ERASE $DISK ($MODEL) and install HDDLive: user=$USERN host=$HOSTN"
+if [ "$YES" -ne 1 ]; then
+  read -r -p "Type the device path ($DISK) to continue: " A; [ "$A" = "$DISK" ] || die "cancelled"
+  read -r -p "Type ERASE to confirm: " A; [ "$A" = "ERASE" ] || die "cancelled"
+fi
+
+# ---- 5. install
+T=/target; EFI=0; [ -d /sys/firmware/efi ] && EFI=1
+case "$DISK" in *[0-9]) P="${DISK}p" ;; *) P="$DISK" ;; esac
+cleanup() { umount -R "$T" 2>/dev/null; }
+trap cleanup EXIT
+step() { echo; echo "== $*"; }
+
+step "Partitioning $DISK (GPT: bios_grub + EFI + root)"
+wipefs -a "$DISK" >/dev/null 2>&1
+parted -s "$DISK" mklabel gpt mkpart bios 1MiB 3MiB set 1 bios_grub on mkpart ESP fat32 3MiB 515MiB set 2 esp on mkpart root ext4 515MiB 100% || die "partitioning failed"
+partprobe "$DISK" 2>/dev/null; udevadm settle; sleep 2
+[ -b "${P}2" ] && [ -b "${P}3" ] || die "partitions did not appear (${P}2 / ${P}3)"
+mkfs.vfat -F32 "${P}2" >/dev/null || die "mkfs.vfat failed"
+mkfs.ext4 -q -L hddlive "${P}3" || die "mkfs.ext4 failed"
+
+step "Copying the system (a few minutes)"
+mkdir -p "$T"; mount "${P}3" "$T" || die "mount root failed"
+mkdir -p "$T/boot/efi"; mount "${P}2" "$T/boot/efi" || die "mount ESP failed"
+unsquashfs -f -d "$T" "$SQ" || die "copy failed"
+
+step "Configuring"
+UR=$(blkid -s UUID -o value "${P}3"); UE=$(blkid -s UUID -o value "${P}2")
+printf 'UUID=%s / ext4 defaults 0 1\nUUID=%s /boot/efi vfat umask=0077 0 1\n' "$UR" "$UE" > "$T/etc/fstab"
+echo "$HOSTN" > "$T/etc/hostname"
+grep -q "127.0.1.1" "$T/etc/hosts" 2>/dev/null && sed -i "s/^127\.0\.1\.1.*/127.0.1.1 $HOSTN/" "$T/etc/hosts" || echo "127.0.1.1 $HOSTN" >> "$T/etc/hosts"
+for d in dev dev/pts proc sys run; do mount --bind "/$d" "$T/$d"; done
+chroot "$T" useradd -m -s /bin/bash -G sudo,adm,plugdev,dialout,cdrom,disk "$USERN" || die "useradd failed"
+printf '%s:%s\n' "$USERN" "$PW1" | chroot "$T" chpasswd || die "chpasswd failed"
+# the installed system must not probe other disks on its own (rescue machine): keep os-prober off
+grep -q '^GRUB_DISABLE_OS_PROBER' "$T/etc/default/grub" 2>/dev/null && sed -i 's/^GRUB_DISABLE_OS_PROBER.*/GRUB_DISABLE_OS_PROBER=true/' "$T/etc/default/grub" || echo 'GRUB_DISABLE_OS_PROBER=true' >> "$T/etc/default/grub"
+
+step "Initramfs and GRUB (Legacy + UEFI)"
+chroot "$T" update-initramfs -u -k all || die "update-initramfs failed"
+chroot "$T" grub-install --target=i386-pc "$DISK" || echo "WARNING: BIOS/Legacy GRUB failed (UEFI boot may still work)"
+NV=""; [ "$EFI" -eq 1 ] || NV="--no-nvram"
+chroot "$T" grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=ubuntu $NV || echo "WARNING: UEFI GRUB failed"
+chroot "$T" grub-install --target=x86_64-efi --efi-directory=/boot/efi --removable --no-nvram || true
+chroot "$T" update-grub || die "update-grub failed"
+sync
+
+cleanup; trap - EXIT
+echo
+echo "DONE. HDDLive is installed on $DISK (user: $USERN)."
+echo "Reboot, remove the live USB/DVD and boot from that disk (Legacy or UEFI)."
+echo "Bench protections are kept; to restore normal behaviour: sudo rm /etc/udev/rules.d/99-disable-udisk-automount.rules"
+HDDLIVE_INSTALL_EOF
+chmod 755 /usr/local/bin/hddlive-install
+cat > $G/8-install-to-disk.txt <<'EOF'
+MAKE HDDLIVE PERMANENT: INSTALL TO A DISK, OR KEEP IT ON THE USB STICK
+=======================================================================
+This image has no graphical installer. Two supported ways:
+
+1) INSTALL TO A DISK (internal HDD/SSD/NVMe or an external disk) - one command
+     sudo hddlive-install                      (asks everything, shows the disks)
+     sudo hddlive-install /dev/sdb --user tech --hostname hddlive
+   * It ERASES the chosen disk COMPLETELY. Use an empty disk, NEVER the failing disk you are working on.
+   * It refuses the disk that holds the live media and disks with mounted partitions.
+   * Creates GPT (bios_grub + 512 MiB EFI + ext4 root), copies the system, creates your user, rebuilds the initramfs and installs
+     GRUB for Legacy/BIOS AND UEFI. os-prober is disabled, so the installed system never probes other disks on its own.
+   * If you booted with "load into RAM", mount the USB stick and add:  --squashfs /path/casper/filesystem.squashfs
+   * After it finishes: reboot, remove the USB stick, boot from the disk. The bench protections stay on (no auto-mount, RAID/ZFS not
+     assembled automatically). To get normal auto-mount back: sudo rm /etc/udev/rules.d/99-disable-udisk-automount.rules
+   * The OpenSuperClone driver is built for the image kernel; if apt installs a newer kernel DKMS rebuilds it.
+
+2) KEEP IT ON THE USB STICK WITH PERSISTENCE (settings, licenses, files survive reboots)
+   a. Write the ISO to the stick (dd / Rufus DD mode). Free space remains after the image.
+   b. Create a partition in the free space labeled casper-rw (replace sdX; check with lsblk first):
+        sudo parted /dev/sdX mkpart persist ext4 <end-of-last-partition> 100%
+        sudo mkfs.ext4 -L casper-rw /dev/sdX3
+   c. Boot the entry "HDDLive - persistent (needs a partition labeled casper-rw)".
+   Nothing is saved without that partition. Persistence keeps changes on the stick: do not use it for the failing customer's disk.
+EOF
+
 cat > /usr/local/bin/hddlive-selftest <<'EOF'
 #!/bin/bash
 # HDDLive self-test: checks that the tools are installed and that the GUIs open (needs a graphical session).
@@ -290,6 +453,7 @@ chk "GSmartControl 2.0 (/usr/local)" "test -x /usr/local/sbin/gsmartcontrol"
 chk "ZFS (module and tools)" "command -v zpool && modinfo zfs"
 chk "Firefox (Mozilla deb)" "command -v firefox && ! snap list firefox"
 chk "anti-automount udev rule" "test -f /etc/udev/rules.d/99-disable-udisk-automount.rules"
+chk "hddlive-install present and valid" "test -x /usr/local/bin/hddlive-install && bash -n /usr/local/bin/hddlive-install"
 chk "English-only image (no Portuguese language packs)" "! dpkg -l 'language-pack-pt*' 2>/dev/null | grep -q '^ii'"
 if [ -n "$DISPLAY" ]; then
   echo "== GUIs (opens each one for 10s)"

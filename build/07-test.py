@@ -19,6 +19,8 @@ else:
 disk = f"{out}/testdisk.img"
 subprocess.run(["qemu-img", "create", "-f", "raw", disk, "512M"], check=True, stdout=subprocess.DEVNULL)
 args += ["-drive", f"file={disk},format=raw,if=none,id=d0", "-device", "ide-hd,drive=d0,serial=HDDLIVE-TEST,model=TESTDISK"]
+if os.environ.get("EXTRA_DISK"):   # a second, blank disk (e.g. to test hddlive-install): /dev/sdb inside the live system
+    args += ["-drive", f"file={os.environ['EXTRA_DISK']},format=raw,if=none,id=d1", "-device", "ahci,id=ahci2", "-device", "ide-hd,drive=d1,bus=ahci2.0,serial=INSTALLTARGET,model=INSTALLDISK"]
 if mode == "uefi":
     vars_copy = f"{out}/OVMF_VARS.fd"
     shutil.copy("/usr/share/OVMF/OVMF_VARS_4M.fd", vars_copy)

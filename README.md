@@ -24,6 +24,7 @@ The central piece is **[OpenSuperClone](https://github.com/ISpillMyDrink/OpenSup
 * **Everything in one place** — cloning, imaging, file/partition recovery, forensics, RAID/LVM/LUKS/BitLocker/ZFS, SMART/NVMe diagnostics, hex editors, network upload (rclone/sshfs), plus launchers for the proprietary suites you license yourself.
 * **OpenSuperClone with a working virtual-disk driver** (DKMS, built for the image kernel) and its 65 ATA/Seagate/WD scripts; the stable 2.5.0 package is kept as a fallback.
 * **Safe by default** — no auto-mount, no RAID/ZFS/multipath auto-assembly, no screensaver/suspend/auto-updates, a `disable ataX` boot entry to keep Linux away from a bad drive, read-only recipes in the cheat sheets.
+* **Permanent install on demand** — `sudo hddlive-install` (also a Desktop shortcut) copies the live system to a disk with GRUB for Legacy/BIOS **and** UEFI; or keep it on the USB stick with persistence. See [docs/INSTALL-TO-DISK.md](docs/INSTALL-TO-DISK.md).
 * **Guided, discoverable desktop** — 9 numbered folders that follow the recovery workflow, a launcher for every GUI and for the important terminal tools (it opens a terminal showing example commands), 7 cheat sheets, and a self-test command that checks ~70 things.
 * **Reproducible and auditable** — the entire image is built by readable bash scripts; no opaque binary blobs are stored in this repository.
 * **Free to rebuild** — only scripts and documentation are published; you choose which proprietary tools (if any) to add and under which license.
@@ -197,6 +198,7 @@ docs/PROGRAMS.md  what every program in the image does and how to use it
 docs/SOFTWARE-LIST.md  main programs with the exact versions in the image
 docs/ALL-PACKAGES.md   every installed package (dpkg) with version and description
 docs/STEP-BY-STEP.md  copy-and-paste build / test / USB walkthrough
+docs/INSTALL-TO-DISK.md  install the live system to a disk (hddlive-install) or use persistence
 docs/BUILD.md     how the image is built, lessons learned, how to test
 ```
 
